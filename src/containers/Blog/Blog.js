@@ -1,54 +1,41 @@
-import React, { Component } from 'react';
-import axios from "axios";
-
-import Post from '../../components/Post/Post';
-import FullPost from '../../components/FullPost/FullPost';
-import NewPost from '../../components/NewPost/NewPost';
+import React, { Component, Suspense } from 'react';
+import { Route, NavLink, Switch } from 'react-router-dom';
+import Posts from './Posts/Posts';
+// import NewPost from './NewPost/NewPost';
 import './Blog.css';
+// import asyncComponent from '../../hoc/asyncComponent'
 
+
+const NewPost = React.lazy(() => import('./NewPost/NewPost'))
+// const AsyncNewPost =  asyncComponent(() => {
+//     return import('./NewPost/NewPost');
+// })
 
 class Blog extends Component {
 
-    state ={
-        posts: [],
-        selectedPostId: null
-    }
-    componentDidMount() {
-        axios.get('https://jsonplaceholder.typicode.com/posts')
-            .then(response => {
-                // console.log('axios', response);
-                const posts = response.data.slice(0, 4);
-                const updatedPost = posts.map(post => {
-                    return {
-                        ...post,
-                        author: 'harshit'
-                    }
-                })
-                this.setState({posts: updatedPost});
-            })
-    }
-
-    postSelectedHandler = (id) => {
-        this.setState({selectedPostId: id});
-    }
-    
     render () {
-
-
-        const posts = this.state.posts.map(post => {
-            return <Post key={post.id} title={post.title} author={post.author} clicked={() => this.postSelectedHandler(post.id)}/>
-        })
         return (
-            <div>
-                <section className="Posts">
-                    {posts}
-                </section>
-                <section>
-                    <FullPost id={this.state.selectedPostId}/>
-                </section>
-                <section>
-                    <NewPost />
-                </section>
+            <div className="Blog">
+                <header>
+                    <nav>
+                        <ul>
+                            <li><NavLink to="/posts" >Posts</NavLink></li>
+                            <li><NavLink to={{
+                                pathname: "/new-post"
+                            }}>New Post</NavLink></li>
+                        </ul>
+                    </nav>
+                </header>
+                {/* <Route path='/' exact render={() => <h1>Home</h1>} /> */}
+                <Switch>
+                    {/* <Route path='/new-post' exact component={AsyncNewPost} /> */}
+                    <Route path='/new-post' exact render={() => <Suspense fallback={<div>Loading...</div>}>
+                        <NewPost />
+                    </Suspense>} />
+                    <Route path='/posts' component={Posts} />
+                    
+                </Switch>
+                {/* <Route path='/' exact component={Posts} /> */}
             </div>
         );
     }
